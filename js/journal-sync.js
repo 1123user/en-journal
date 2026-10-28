@@ -138,8 +138,21 @@
       return { n: added, secs: secs, names: names };
     };
 
-    if (prog) return apply(prog);
-    return getJSON("/__progress").then(apply);
+    /* 题库按年懒加载：先把快照里涉及的年份取回来，否则 paperSec 是空的、会漏同步 */
+    function ensureYearsOf(snap) {
+      var ys = [];
+      Object.keys(snap || {}).forEach(function (k) {
+        if (k.indexOf(AP) === 0) ys.push(k.slice(AP.length));
+      });
+      if (!ys.length) return Promise.resolve();
+      if (N.ensureYear) return Promise.all(ys.map(function (y) { return N.ensureYear(y); }));
+      return Promise.resolve();
+    }
+
+    if (prog) return ensureYearsOf(prog).then(function () { return apply(prog); });
+    return getJSON("/__progress").then(function (snap) {
+      return ensureYearsOf(snap).then(function () { return apply(snap); });
+    });
   }
 
   /* ── 记录本 → 主站 ──
