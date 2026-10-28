@@ -31,6 +31,7 @@
   </nav>
 
   <span class="sync" id="syncState">准备中…</span>
+  <button class="link" id="btnPair" type="button" title="手机扫一下：公网版记录本 + 云端同步，不用连同一个 Wi-Fi">手机配对</button>
   <button class="link" id="btnPhone" type="button" title="同一 Wi-Fi 下用手机打开，扫码或复制地址">手机打开</button>
   <a class="link" href="index.html">返回刷题站</a>
 </header>
@@ -160,6 +161,20 @@
 
 <div id="toast"></div>
 
+<div class="sheet" id="pairSheet" hidden>
+  <div class="sheet-c">
+    <h3>手机配对（走 GitHub，不用连同一个 Wi-Fi）</h3>
+    <p class="sheet-p">手机扫下面的码：打开公网版记录本并自动配对。之后电脑关着、换 Wi-Fi、开热点都不影响，
+      记完的选项会存到 GitHub 仓库，两边按题自动合并。</p>
+    <div class="qr" id="pairQr"></div>
+    <div class="urls" id="pairUrl"></div>
+    <a class="btn primary" id="pairClip" href="#" hidden>装到这台手机的主屏（自带配对）</a>
+    <p class="sheet-tip">配对码里含你的 GitHub 凭据，只存在手机本地，别转发给别人；
+      旧的主屏幕图标（连电脑那种）长按删掉，用这个新的。</p>
+    <div class="sheet-f"><button class="btn" data-close>关闭</button></div>
+  </div>
+</div>
+
 <div class="sheet" id="phoneSheet" hidden>
   <div class="sheet-c">
     <h3>手机上打开记录本</h3>
@@ -197,5 +212,6 @@
 <script src="js/journal-sync.js"></script>
 <script src="js/journal-plan.js"></script>
 <script src="js/journal-mobile.js"></script>
+<script src="js/journal-pair.js"></script>
 </body>
 </html>
