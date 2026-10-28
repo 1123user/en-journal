@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>英语刷题记录本 · 只记我选了什么</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="英语记录本">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="stylesheet" href="css/journal.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="logo">记</span>
+    <div>
+      <h1>英语刷题记录本</h1>
+      <p>只记「我选了哪个」· 分析在另一个标签页</p>
+    </div>
+  </div>
+
+  <nav class="viewtabs" id="viewTabs">
+    <button data-v="entry" class="on">记录</button>
+    <button data-v="ana">分析</button>
+  </nav>
+
+  <span class="sync" id="syncState">准备中…</span>
+  <button class="link" id="btnPhone" type="button" title="同一 Wi-Fi 下用手机打开，扫码或复制地址">手机打开</button>
+  <a class="link" href="index.html">返回刷题站</a>
+</header>
+
+<main class="wrap">
+
+  <!-- ══════════════ 记录 ══════════════ -->
+  <section id="vEntry">
+    <div class="toolbar">
+      <div class="fld">
+        <label>日期</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="fld">
+        <label>年份</label>
+        <select id="fYear"></select>
+      </div>
+      <div class="fld">
+        <label>本篇用时</label>
+        <div class="unit">
+          <input type="number" id="fUsed" min="0" max="240" step="1" placeholder="可后补">
+          <span>分钟</span>
+        </div>
+      </div>
+      <div class="fld grow">
+        <label>题型</label>
+        <div class="segtabs" id="fSec"></div>
+      </div>
+      <button class="btn primary" id="btnSave">保存本篇</button>
+    </div>
+
+    <div class="planbar" id="planBar" hidden></div>
+
+    <div class="syncbar">
+      <span class="sb-ico">⇄</span>
+      <span class="sb-t">与刷题站（index.html）双向自动同步：这里点完选项 1 秒内就写进主站作答，
+        主站做的题 12 秒内自动补回来，换设备也不用重复录
+        <code title="主站作答键">ky:ans</code><code title="主站计时键">ky:time</code></span>
+      <button class="btn" id="btnPull">立即拉取</button>
+      <button class="btn" id="btnPush">立即推送</button>
+      <span class="sb-note" id="syncNote"></span>
+    </div>
+
+    <div class="sechint" id="secHint"></div>
+
+    <div class="qlist" id="qList"></div>
+
+    <p class="footnote">录入不判对错、不算分。选项点一下记上，再点一下取消；对错与错因在「分析」里看。</p>
+
+    <h2 class="h2">已记录 <span class="cnt" id="recCount">0</span></h2>
+    <div class="recs" id="recList"></div>
+  </section>
+
+  <!-- ══════════════ 分析 ══════════════ -->
+  <section id="vAna" hidden>
+    <div class="anabar">
+      <div class="segtabs" id="anaScope">
+        <button type="button" data-scope="today" class="on">今日这一篇</button>
+        <button type="button" data-scope="all">累计总览</button>
+      </div>
+      <span class="ana-who" id="anaWho"></span>
+    </div>
+
+    <!-- 层级一：今天/当前这一篇的复盘 -->
+    <div id="anaOne"></div>
+
+    <!-- 层级二：全部记录的累计总览 -->
+    <div id="anaAll" hidden>
+      <div class="cards" id="anaCards"></div>
+
+      <div class="pane">
+        <div class="pane-hd">
+          <b>该优先补的题</b>
+          <span class="sub">按难度系数从高到低：系数越高越是送分题，错了最亏</span>
+        </div>
+        <div id="anaWrong" class="wrongpool"></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-hd">
+          <b>按篇看：难度系数 vs 我的得分</b>
+          <span class="sub">期望 = 该篇系数均值；偏差为正说明超常发挥</span>
+        </div>
+        <div id="anaSecs"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="pane">
+          <div class="pane-hd"><b>用时</b><span class="sub">与限时比</span></div>
+          <div id="anaTime"></div>
+        </div>
+        <div class="pane">
+          <div class="pane-hd"><b>错因分布</b><span class="sub">错题里选了原因的</span></div>
+          <div id="anaCause"></div>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-hd">
+          <b>理解偏差画像</b>
+          <span class="sub">错题写了「我的理解」后，这里看你在哪一步读偏</span>
+        </div>
+        <div id="whyStat"></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-hd">
+          <b>我的理解档案</b>
+          <span class="sub">每道错题当时怎么读的，全部留档可回溯</span>
+        </div>
+        <div id="whyArch"></div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-hd"><b>每天得分率</b><span class="sub">难度加权</span></div>
+        <div id="anaTrend" class="trend"></div>
+      </div>
+
+      <details class="method">
+        <summary>难度系数口径（点开看）</summary>
+        <div id="anaMethod"></div>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<div class="sheet" id="phoneSheet" hidden>
+  <div class="sheet-c">
+    <h3>手机上打开记录本</h3>
+    <p class="sheet-p">电脑和手机连同一个 Wi-Fi，手机扫下面的码，或把地址复制到手机浏览器。</p>
+    <div class="hs-warn" id="hsWarn" hidden></div>
+
+    <div class="qr" id="qrBox"></div>
+    <div class="urls" id="urlList"></div>
+
+    <div class="hs" id="hsBox">
+      <div class="hs-hd" id="hsHd">装到手机主屏幕</div>
+      <ol class="hs-steps" id="hsSteps">
+        <li>图标用 <b>Mac 名字</b>作地址（<code id="hsMdns">…</code>
+          <a class="hs-test" id="hsTest" href="#" hidden>点这里先试试能不能打开</a>），
+          家里 Wi-Fi 换手机热点都不失效；首次会问「本地网络」权限，必须点允许</li>
+        <li>点下面的按钮下载描述文件 → 「设置 → 通用 → VPN 与设备管理 → 已下载的描述文件」→ 右上角「安装」</li>
+        <li>回桌面点图标：全屏、无地址栏。旧图标长按删掉，设置里多余的旧描述文件也一并删掉</li>
+      </ol>
+      <a class="btn primary" id="btnWebclip" href="/__webclip">一键装到主屏幕（换网络也能用）</a>
+      <a class="hs-alt" id="btnWebclipLocal" href="/__webclip?host=ip" hidden></a>
+      <p class="sheet-tip" id="hsTip">第一次用名字地址，Safari 会问「本地网络」权限，必须点允许；拒绝的话图标打开就是白屏。</p>
+    </div>
+
+    <p class="sheet-tip" id="sheetTip"></p>
+    <div class="sheet-f"><button class="btn" data-close>关闭</button></div>
+  </div>
+</div>
+
+<script src="data/papers.js"></script>
+<script src="data/diff.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/journal-why.js"></script>
+<script src="js/journal-ana.js"></script>
+<script src="js/journal-sync.js"></script>
+<script src="js/journal-plan.js"></script>
+<script src="js/journal-mobile.js"></script>
+</body>
+</html>

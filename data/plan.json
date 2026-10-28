@@ -1,0 +1,14 @@
+{
+ "date": "2026-10-28",
+ "day": 3,
+ "year": "2024",
+ "sec": "text3",
+ "label": "Text 3",
+ "title": "2024 年 Text 3（限时 18 分钟）",
+ "minutes": 18,
+ "note": "四符号：√ 对 / △ 待定正确 / × 没说 / ✗ 错；先判能否定位",
+ "kind": "today",
+ "ok": true,
+ "today": "2026-10-28",
+ "src": "349打卡/plan-en.json"
+}
