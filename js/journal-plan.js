@@ -32,7 +32,8 @@
     var cur = N.cur();
     cur.year = ykey(p);
     cur.sec = p.sec;
-    N.renderEntry();
+    if (N.ensureYear) N.ensureYear(cur.year).then(function () { N.renderEntry(); });
+    else N.renderEntry();
     return true;
   }
 
