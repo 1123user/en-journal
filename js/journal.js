@@ -6,8 +6,11 @@
   "use strict";
 
   var PAPERS = window.PAPERS || {};
+  var IDX = window.PAPERS_INDEX || null;      /* 年份索引：只给列表，题库按年懒加载 */
   var DIFF = window.DIFF || { items: {}, sections: {} };
-  var YEARS = Object.keys(PAPERS).sort(function (a, b) { return b - a; });
+  var YEARS = (IDX && IDX.years && IDX.years.length)
+    ? IDX.years.slice()
+    : Object.keys(PAPERS).sort(function (a, b) { return b - a; });
   var LS_KEY = "kb:journal:v1";   /* 前缀刻意不用 ky:，免得混进主站 /__progress 快照 */
   var API = "/__journal";
   var LETTERS = "ABCDEFGH";
@@ -105,9 +108,53 @@
     return null;
   }
 
+  /* ── 题库懒加载：整包 1.8MB，热点下要一分钟，改成一年一个分片 ── */
+  var loading = {}, loadQ = [], loadingNow = false;
+  function ensureYear(y) {
+    y = String(y);
+    if (PAPERS[y]) return Promise.resolve(true);
+    if (loading[y]) return loading[y];
+    loading[y] = new Promise(function (res) {
+      var s = document.createElement("script");
+      s.src = "data/papers/" + y + ".js";
+      s.onload = function () { PAPERS = window.PAPERS || PAPERS; res(!!PAPERS[y]); };
+      s.onerror = function () { res(false); };
+      document.head.appendChild(s);
+    });
+    return loading[y];
+  }
+  function pump() {
+    if (loadingNow || !loadQ.length) return;
+    loadingNow = true;
+    var y = loadQ.shift();
+    ensureYear(y).then(function () {
+      loadingNow = false;
+      if (PAPERS[String(y)]) {
+        renderYearSel();
+        if (String(cur.year) === String(y)) renderEntry();   /* 正好是当前这一篇：补一次渲染 */
+        else renderRecList();                                /* 别的年份：至少把「已记录」补全 */
+      }
+      pump();
+    });
+  }
+  function preload(years) {
+    (years || []).forEach(function (y) {
+      y = String(y);
+      if (!PAPERS[y] && loadQ.indexOf(y) < 0) loadQ.push(y);
+    });
+    pump();
+  }
+  function recordYears() {
+    var seen = {};
+    Object.keys(J.days).forEach(function (d) {
+      Object.keys(J.days[d]).forEach(function (k) { seen[String(k).split("|")[0]] = 1; });
+    });
+    return Object.keys(seen);
+  }
+
   function secKeysOf(year) {
     var p = PAPERS[String(year)];
-    if (!p) return [];
+    if (!p) return (IDX && IDX.secs && IDX.secs[String(year)]) || [];
     var out = [];
     (p.texts || []).forEach(function (t) { out.push("text" + t.no); });
     if (p.cloze && p.cloze.questions) out.push("cloze");
@@ -293,7 +340,8 @@
     $("fYear").addEventListener("change", function () {
       cur.year = this.value;
       cur.sec = secKeysOf(cur.year)[0] || "text1";
-      renderEntry();
+      renderSecTabs();
+      ensureYear(cur.year).then(function () { renderEntry(); });
     });
     $("fSec").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-s]");
@@ -367,6 +415,7 @@
     cur: function () { return cur; },
     paperSec: paperSec, secKeysOf: secKeysOf, diffOf: diffOf, diffSec: diffSec,
     recOf: recOf, ensureRec: ensureRec, touch: touch, commit: commit,
+    ensureYear: ensureYear, preload: preload, recordYears: recordYears, YEARS: YEARS,
     CAUSES: CAUSES, CAUSE_MAP: CAUSE_MAP, ACTIONS: ACTIONS, PART_CN: PART_CN,
     LIMIT: LIMIT, pct: pct, fn2: fn2, esc: esc, bandCls: bandCls, toast: toast,
     markSync: markSync, renderEntry: renderEntry, renderRecList: renderRecList,
@@ -381,9 +430,12 @@
       var local = JSON.parse(localStorage.getItem(LS_KEY));
       if (local && local.days) J = local;
     } catch (e) {}
+    if (YEARS.length && YEARS.indexOf(String(cur.year)) < 0) cur.year = YEARS[0];
     renderYearSel();
     renderEntry();
     bind();
+    preload(recordYears());
+    ensureYear(cur.year).then(function () { renderEntry(); });
     if (window.JOURNAL_ANA && window.JOURNAL_ANA.init) window.JOURNAL_ANA.init();
     var B = window.BACK;
     var req = (B && B.journalGet)
@@ -395,6 +447,7 @@
         writeLS();
         markSync(B && B.mode === "cloud" ? (B.writable() ? "云同步" : "云端只读") : "已同步",
                  B && B.mode === "cloud" && !B.writable() ? "warn" : "ok");
+        preload(recordYears());        /* 服务端/云端带回的历史记录，年份分片接着下 */
         renderEntry();
         if (window.JOURNAL_ANA && window.JOURNAL_ANA.refresh) window.JOURNAL_ANA.refresh();
       })
