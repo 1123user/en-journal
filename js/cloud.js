@@ -250,19 +250,41 @@
     return out;
   }
 
+  /* 云端只留作答/计时/时间戳；单词本、标记这些本机杂项不进仓库（文件小，轮询才便宜） */
+  function trimProg(p) {
+    var out = {}, keep = [AP, TP, "ky:ansat:", META];
+    Object.keys(p || {}).forEach(function (k) {
+      for (var i = 0; i < keep.length; i++) {
+        if (k.indexOf(keep[i]) === 0) { out[k] = p[k]; return; }
+      }
+    });
+    return out;
+  }
+
+  function stable(o) {
+    if (o == null || typeof o !== "object") return JSON.stringify(o);
+    if (Object.prototype.toString.call(o) === "[object Array]") {
+      return "[" + o.map(stable).join(",") + "]";
+    }
+    return "{" + Object.keys(o).sort().map(function (k) {
+      return JSON.stringify(k) + ":" + stable(o[k]);
+    }).join(",") + "}";
+  }
+
   /* ── 写入串行化（合并 1.5 秒内的多次改动，避免刷出一堆 commit） ── */
   var chain = Promise.resolve(), busy = false, queued = null;
   function push(patch) {
     queued = queued || {};
     if (patch.days) queued.days = mergeDays(queued.days || {}, patch.days);
-    if (patch.prog) queued.prog = mergeProg(queued.prog || {}, patch.prog);
+    if (patch.prog) queued.prog = mergeProg(queued.prog || {}, trimProg(patch.prog));
     if (busy) return chain;
     busy = true;
     chain = new Promise(function (res) { setTimeout(res, 1500); }).then(function run() {
       var p = queued; queued = null;
       return remoteGet(true).then(function (cur) {
         var next = mergeSync(cur, p || {});
-        if (JSON.stringify(next) === JSON.stringify({ v: 1, t: next.t, days: cur.days || {}, prog: cur.prog || {} })) return null;
+        if (stable(next.days) === stable(cur.days || {}) && stable(next.prog) === stable(cur.prog || {})) return null;
+        next.prog = trimProg(next.prog);
         return remotePut(next);
       }).then(function (r) {
         lsSet(LS_AT, String(Date.now()));
