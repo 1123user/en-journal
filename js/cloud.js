@@ -79,7 +79,8 @@
       if (o.t) lsSet(LS_TOK, o.t);
       cfg = readCfg();
     }
-    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    /* 刻意不清 #c：iPhone「添加到主屏幕」会连地址一起存，
+       主屏图标每次打开都能凭这段码自动配对（Safari 与主屏图标是两套存储） */
   })();
 
   /* 电脑和手机都是「端」：各自直接连同一个云端数据文件，谁也不给谁当搬运工。
@@ -391,16 +392,46 @@
     });
   }
 
-  function askPair() {
-    if (writable() && !confirm("已配对。要重新粘贴配对码吗？")) return;
-    var txt = prompt("粘贴配对码（电脑上「记录本 → 手机配对」里点「复制配对码」，或直接扫那边的二维码）");
-    if (!txt) return;
-    var o = parsePair(txt);
-    if (!o) { alert("配对码认不出来，重试一次"); return; }
-    lsSet(LS_CFG, JSON.stringify({ o: o.o, r: o.r, p: o.p || DEF.p, b: o.b || DEF.b }));
-    if (o.t) lsSet(LS_TOK, o.t);
-    location.reload();
+  /* 配对弹层：主屏图标（独立存储）里没有凭据时，只能在这里粘一次 */
+  function openPairGate() {
+    if (document.getElementById("pairGate")) return;
+    var wrap = document.createElement("div");
+    wrap.id = "pairGate";
+    wrap.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;" +
+      "background:rgba(17,24,39,.55);display:flex;align-items:flex-end;justify-content:center";
+    wrap.innerHTML =
+      '<div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:520px;' +
+      'padding:20px 18px 26px;box-sizing:border-box;font:14px/1.6 -apple-system,BlinkMacSystemFont,' +
+      "'PingFang SC',sans-serif;color:#111827\">" +
+      '<div style="font-size:17px;font-weight:700;margin-bottom:6px">这台设备还没连云端</div>' +
+      '<div style="color:#4b5563;margin-bottom:12px">没连上之前，选过的答案<b>只存在这台手机</b>，电脑上看不到。' +
+      '电脑上打开记录本 → 点右上角「手机配对」→ 点「复制配对码」，然后在这里长按粘贴。</div>' +
+      '<textarea id="pairGateInput" placeholder="粘贴配对码（en1: 开头那串）" ' +
+      'style="width:100%;height:62px;box-sizing:border-box;border:1px solid #d1d5db;border-radius:10px;' +
+      'padding:10px;font-size:13px;-webkit-user-select:text;user-select:text"></textarea>' +
+      '<div style="display:flex;gap:10px;margin-top:12px">' +
+      '<button id="pairGateOk" type="button" style="flex:1;background:#2563eb;color:#fff;border:0;' +
+      'border-radius:10px;padding:12px;font-size:15px;font-weight:600">配对并上传本机记录</button>' +
+      '<button id="pairGateLater" type="button" style="background:#f3f4f6;color:#374151;border:0;' +
+      'border-radius:10px;padding:12px;font-size:14px">先不用</button></div></div>';
+    document.body.appendChild(wrap);
+
+    var input = wrap.querySelector("#pairGateInput");
+    wrap.querySelector("#pairGateOk").addEventListener("click", function () {
+      var o = parsePair(input.value);
+      if (!o) { alert("配对码认不出来：确认整串都粘上了（en1: 开头）"); return; }
+      lsSet(LS_CFG, JSON.stringify({ o: o.o, r: o.r, p: o.p || DEF.p, b: o.b || DEF.b }));
+      if (o.t) lsSet(LS_TOK, o.t);
+      lsSet("kb:cloud:gate", "ok");
+      location.reload();
+    });
+    wrap.querySelector("#pairGateLater").addEventListener("click", function () {
+      lsSet("kb:cloud:gate", "off");
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+    });
   }
+
+  function askPair() { openPairGate(); }
 
   /* 没配对：底部常驻一条提示，别再让人以为「记的都在云端」 */
   function banner() {
@@ -473,6 +504,7 @@
       mark("未配对 · 点这里", "warn");
       banner();
       if (isLocal) selfPair();
+      else if (lsGet("kb:cloud:gate") !== "off") setTimeout(openPairGate, 1200);
     }
     tick(true);
     setTimeout(backfill, 2500);
