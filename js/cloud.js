@@ -356,6 +356,15 @@
     return push({ days: (J && J.days) || {} })
       .catch(function () { if (isLocal) return postJSON("/__journal", J); throw 0; });
   };
+  /* 记录本条目（哪一天做了哪一篇）：主站据此判断「这篇是记录本做的」，好自动核对 */
+  BACK.journalDays = function () {
+    return remoteGet().then(function (s) { return s.days || {}; })
+      .catch(function () {
+        if (isLocal) return getJSON("/__journal").then(function (o) { return (o && o.days) || {}; });
+        throw 0;
+      });
+  };
+
   BACK.progressGet = function () {
     return remoteGet().then(function (s) { return s.prog || {}; })
       .catch(function () { if (isLocal) return getJSON("/__progress"); throw 0; });
