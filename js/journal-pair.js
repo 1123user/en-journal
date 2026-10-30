@@ -46,6 +46,23 @@
           clip.href = "/__webclip?u=" + encodeURIComponent(url);
           clip.hidden = false;
         }
+        var cp = document.getElementById("pairCopy");
+        if (cp) {
+          cp.hidden = false;
+          cp.onclick = function () {
+            var done = function () {
+              cp.textContent = "已复制，去手机粘贴";
+              setTimeout(function () { cp.textContent = "复制配对码（发给手机粘贴）"; }, 2000);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(o.link).then(done, function () {
+                window.prompt("手动复制这串，发到手机：", o.link);
+              });
+            } else {
+              window.prompt("手动复制这串，发到手机：", o.link);
+            }
+          };
+        }
         if (o.msg) urlBox.innerHTML += '<p class="sheet-tip">云端同步：' + esc(o.msg) + "</p>";
       })
       .catch(function () {
