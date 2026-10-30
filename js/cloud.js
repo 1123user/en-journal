@@ -368,7 +368,7 @@
         lastSeen = s.t || 0;
         var n = applyRemote(s);
         if (n) mark("云同步 · 拉入 " + n + " 篇", "ok");
-        else if (!writable()) mark("云同步 · 只读", "warn");
+        else if (!writable()) mark("未配对 · 点底部配对", "warn");
         else mark("云同步 · 已连", "ok");
       }
     }).catch(function () {
@@ -419,7 +419,18 @@
     if (!Object.keys(days).length) return;
     remoteGet(true).then(function (s) {
       var merged = mergeDays(s.days || {}, days);
-      if (stable(merged) !== stable(s.days || {})) return push({ days: days });
+      if (stable(merged) === stable(s.days || {})) return;
+      var add = 0;
+      Object.keys(merged).forEach(function (d) {
+        Object.keys(merged[d] || {}).forEach(function (k) {
+          if (!((s.days || {})[d] || {})[k]) add++;
+        });
+      });
+      return push({ days: days }).then(function () {
+        if (add && window.JOURNAL && window.JOURNAL.toast) {
+          window.JOURNAL.toast("本机 " + add + " 篇记录已上传云端");
+        }
+      });
     }).catch(function () {});
   }
 
