@@ -192,7 +192,7 @@
         .catch(function () {
           markSync(B && B.mode === "cloud" ? "未配对 · 看页面底部" : "仅本地", "warn");
         });
-    }, 600);
+    }, 400);
   }
   function commit(msg) {
     writeLS();
