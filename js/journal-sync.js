@@ -12,7 +12,7 @@
 
   var AP = "ky:ans:", TP = "ky:time:", AT = "ky:ansat:", META = "ky:syncat";
   var RECENT = 7 * 864e5;          /* 自动拉取只看最近 7 天的计时 */
-  var POLL = 12e3;                 /* 轮询间隔 */
+  var POLL = 6e3;                 /* 轮询间隔 */
   var busy = null;                 /* 正在同步时不重复发起 */
 
   function pad(n) { return n < 10 ? "0" + n : "" + n; }
