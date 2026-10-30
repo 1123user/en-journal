@@ -190,7 +190,7 @@
       Promise.resolve(p)
         .then(function () { markSync(B && B.mode === "cloud" ? "已存云端" : "已落盘", "ok"); })
         .catch(function () {
-          markSync(B && B.mode === "cloud" ? "云端未配对 · 仅本机" : "仅本地", "warn");
+          markSync(B && B.mode === "cloud" ? "未配对 · 看页面底部" : "仅本地", "warn");
         });
     }, 600);
   }
