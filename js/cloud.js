@@ -82,7 +82,9 @@
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
   })();
 
-  var mode = isLocal ? "local" : "cloud";
+  /* 电脑和手机都是「端」：各自直接连同一个云端数据文件，谁也不给谁当搬运工。
+     本机页面靠 /__cloud 自动取凭据（同源、不出局域网）；云端不通时才退回本地接口。 */
+  var mode = "cloud";
   var writable = function () { return !!cfg.tok; };
 
   /* ── GitHub Contents API ── */
@@ -340,23 +342,36 @@
     journalToProg: journalToProg
   };
 
-  if (mode === "local") {
-    BACK.journalGet = function () { return getJSON("/__journal"); };
-    BACK.journalPost = function (J) { return postJSON("/__journal", J); };
-    BACK.progressGet = function () { return getJSON("/__progress"); };
-    BACK.progressPost = function (o) { return postJSON("/__progress", o); };
-    BACK.rev = function () { return getJSON("/__rev"); };
-    BACK.plan = function () { return getJSON("/__plan"); };
-  } else {
-    BACK.journalGet = function () { return remoteGet().then(function (s) { return { days: s.days || {} }; }); };
-    BACK.journalPost = function (J) { return push({ days: (J && J.days) || {} }); };
-    BACK.progressGet = function () { return remoteGet().then(function (s) { return s.prog || {}; }); };
-    BACK.progressPost = function (o) { return push({ prog: o || {} }); };
-    BACK.rev = function () { return remoteGet().then(function (s) { return { p: s.t || 0, j: s.t || 0 }; }); };
-    BACK.plan = function () {
-      return getJSON("data/plan.json").catch(function () { return { ok: false, err: "云端没有计划文件" }; });
-    };
+  /* 云端优先；本机页面在云端连不上时退回本地服务，绝不让人白记一场 */
+  function fallback(fn) {
+    return fn().catch(function (e) { if (!isLocal) throw e; return null; });
   }
+
+  BACK.journalGet = function () {
+    return remoteGet().then(function (s) { return { days: s.days || {} }; })
+      .catch(function () { if (isLocal) return getJSON("/__journal"); throw 0; });
+  };
+  BACK.journalPost = function (J) {
+    return push({ days: (J && J.days) || {} })
+      .catch(function () { if (isLocal) return postJSON("/__journal", J); throw 0; });
+  };
+  BACK.progressGet = function () {
+    return remoteGet().then(function (s) { return s.prog || {}; })
+      .catch(function () { if (isLocal) return getJSON("/__progress"); throw 0; });
+  };
+  BACK.progressPost = function (o) {
+    return push({ prog: o || {} })
+      .catch(function () { if (isLocal) return postJSON("/__progress", o); throw 0; });
+  };
+  BACK.rev = function () {
+    return remoteGet().then(function (s) { return { p: s.t || 0, j: s.t || 0 }; })
+      .catch(function () { if (isLocal) return getJSON("/__rev"); throw 0; });
+  };
+  BACK.plan = function () {
+    return getJSON("data/plan.json").catch(function () {
+      return isLocal ? getJSON("/__plan") : { ok: false, err: "云端没有计划文件" };
+    });
+  };
   window.BACK = BACK;
 
   /* ── 自动同步 ── */
@@ -434,10 +449,31 @@
     }).catch(function () {});
   }
 
+  /* 电脑上的页面：同源问一句 /__cloud 就能拿到本机凭据，不用扫码 */
+  function selfPair() {
+    fetch("/__cloud", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (o) {
+        var p = o && o.link ? parsePair(o.link) : null;
+        if (!p) return;
+        lsSet(LS_CFG, JSON.stringify({ o: p.o, r: p.r, p: p.p || DEF.p, b: p.b || DEF.b }));
+        if (p.t) lsSet(LS_TOK, p.t);
+        cfg = readCfg();
+        var bn = document.getElementById("cloudBanner");
+        if (bn && bn.parentNode) bn.parentNode.removeChild(bn);
+        mark("云同步 · 已连", "ok");
+        tick(true);
+        backfill();
+      }).catch(function () {});
+  }
+
   function boot() {
-    if (mode !== "cloud") return;
     bindPair();
-    if (!writable()) { mark("未配对 · 点这里", "warn"); banner(); }
+    if (!writable()) {
+      mark("未配对 · 点这里", "warn");
+      banner();
+      if (isLocal) selfPair();
+    }
     tick(true);
     setTimeout(backfill, 2500);
     setInterval(function () { tick(false); }, 15000);
