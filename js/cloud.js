@@ -96,7 +96,7 @@
     return h;
   }
   function remoteGet(force) {
-    if (!force && cache.data && Date.now() - cache.at < 4000) return Promise.resolve(cache.data);
+    if (!force && cache.data && Date.now() - cache.at < 2500) return Promise.resolve(cache.data);
     var url = API + "/repos/" + cfg.o + "/" + cfg.r + "/contents/" + cfg.p +
       "?ref=" + cfg.b + "&t=" + Date.now();
     return fetch(url, { headers: ghHeaders(), cache: "no-store" }).then(function (r) {
@@ -282,7 +282,7 @@
     if (patch.prog) queued.prog = mergeProg(queued.prog || {}, trimProg(patch.prog));
     if (busy) return chain;
     busy = true;
-    chain = new Promise(function (res) { setTimeout(res, 1500); }).then(function run() {
+    chain = new Promise(function (res) { setTimeout(res, 1000); }).then(function run() {
       var p = queued; queued = null;
       return remoteGet(true).then(function (cur) {
         var next = mergeSync(cur, p || {});
@@ -377,7 +377,8 @@
 
   /* ── 自动同步 ── */
   function tick(force) {
-    if (mode !== "cloud") return;
+    /* 刷题站主站自己有一套轮询（app.js），这里只服务记录本页面，免得两端同时拉、白白多耗配额 */
+    if (!document.getElementById("qList")) return;
     remoteGet(!!force).then(function (s) {
       if (!s) return;
       if (force || (s.t || 0) > lastSeen) {
@@ -508,7 +509,7 @@
     }
     tick(true);
     setTimeout(backfill, 2500);
-    setInterval(function () { tick(false); }, 15000);
+    setInterval(function () { tick(false); }, 5000);
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible") { tick(true); backfill(); }
     });
