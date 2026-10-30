@@ -376,32 +376,64 @@
     });
   }
 
+  function askPair() {
+    if (writable() && !confirm("已配对。要重新粘贴配对码吗？")) return;
+    var txt = prompt("粘贴配对码（电脑上「记录本 → 手机配对」里点「复制配对码」，或直接扫那边的二维码）");
+    if (!txt) return;
+    var o = parsePair(txt);
+    if (!o) { alert("配对码认不出来，重试一次"); return; }
+    lsSet(LS_CFG, JSON.stringify({ o: o.o, r: o.r, p: o.p || DEF.p, b: o.b || DEF.b }));
+    if (o.t) lsSet(LS_TOK, o.t);
+    location.reload();
+  }
+
+  /* 没配对：底部常驻一条提示，别再让人以为「记的都在云端」 */
+  function banner() {
+    if (writable() || document.getElementById("cloudBanner")) return;
+    var d = document.createElement("div");
+    d.id = "cloudBanner";
+    d.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#b45309;color:#fff;" +
+      "font:13px/1.5 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;padding:10px 14px;" +
+      "display:flex;gap:10px;align-items:center;box-shadow:0 -2px 10px rgba(0,0,0,.25)";
+    d.innerHTML = '<span style="flex:1">未配对：现在只存在这台手机，电脑上看不到。' +
+      '点右边配对后才会自动同步。</span>' +
+      '<button id="cloudPairBtn" type="button" style="background:#fff;color:#b45309;border:0;' +
+      'border-radius:8px;padding:6px 12px;font-weight:600;font-size:13px">配对</button>';
+    document.body.appendChild(d);
+    var b = d.querySelector("#cloudPairBtn");
+    if (b) b.addEventListener("click", askPair);
+  }
+
   function bindPair() {
     var el = document.getElementById("syncState");
     if (!el || mode !== "cloud") return;
     el.style.cursor = "pointer";
-    el.addEventListener("click", function () {
-      if (writable() && !confirm("已配对。要重新粘贴配对码吗？")) return;
-      var txt = prompt("粘贴配对码（电脑上「记录本 → 手机配对」生成的那串，或扫码打开）");
-      if (!txt) return;
-      var o = parsePair(txt);
-      if (!o) { alert("配对码认不出来，重试一次"); return; }
-      lsSet(LS_CFG, JSON.stringify({ o: o.o, r: o.r, p: o.p || DEF.p, b: o.b || DEF.b }));
-      if (o.t) lsSet(LS_TOK, o.t);
-      location.reload();
-    });
+    el.addEventListener("click", askPair);
+  }
+
+  /* 本地有、云端没有的记录 → 补推一次（上次可能没配对 / 断网 / 页面被关掉） */
+  function backfill() {
+    var N = window.JOURNAL;
+    if (!N || !writable()) return;
+    var days = (N.J() && N.J().days) || {};
+    if (!Object.keys(days).length) return;
+    remoteGet(true).then(function (s) {
+      var merged = mergeDays(s.days || {}, days);
+      if (stable(merged) !== stable(s.days || {})) return push({ days: days });
+    }).catch(function () {});
   }
 
   function boot() {
     if (mode !== "cloud") return;
     bindPair();
-    if (!writable()) { mark("云端只读 · 点状态配对", "warn"); }
+    if (!writable()) { mark("未配对 · 点这里", "warn"); banner(); }
     tick(true);
+    setTimeout(backfill, 2500);
     setInterval(function () { tick(false); }, 15000);
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible") tick(true);
+      if (document.visibilityState === "visible") { tick(true); backfill(); }
     });
-    window.addEventListener("focus", function () { tick(true); });
+    window.addEventListener("focus", function () { tick(true); backfill(); });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
