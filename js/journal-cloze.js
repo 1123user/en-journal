@@ -34,12 +34,24 @@
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  /* 上下文：本题空画成下划线，别人的空退成〔n〕 */
+  /* 上下文：只画本题这一个空，别人的空直接抹掉。
+     以前留成〔8〕〔9〕，一整段全是空号，看着就不知道自己在做哪个（2026-11-01 反馈） */
   function ctxHtml(text) {
     var h = esc(text);
-    h = h.replace(/____/g, '<b class="cz-blank">____</b>');
-    h = h.replace(/〔(\d{1,2})〕/g, '<span class="cz-other">〔$1〕</span>');
+    h = h.replace(/____/g, '<b class="cz-blank">　　</b>');
+    h = h.replace(/〔\s*\d{1,2}\s*〕/g, "");
+    h = h.replace(/[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]/g, "");
+    h = h.replace(/[ \t]{2,}/g, " ");
     return h;
+  }
+
+  /* 选项释义：答完才显示，答前不剧透。
+     词库的释义是词典义（同一词会列好几个），太长就把尾巴截掉，别把按钮撑成一堵墙 */
+  function defOf(w) {
+    var D = window.CLOZE_WORDS || {};
+    var t = D[String(w == null ? "" : w).toLowerCase().trim()] || "";
+    if (t.length > 26) t = t.slice(0, 25).replace(/[；;、，,\s]+$/, "") + "…";
+    return t;
   }
 
   function panel() { return document.getElementById("czPanel"); }
@@ -101,8 +113,10 @@
           if (L === it.answer) cls += " right";
           if (L === my && my !== it.answer) cls += " mine-wrong";
         }
+        var def = my ? defOf(w) : "";
         h += '<button type="button" class="' + cls + '" data-id="' + esc(it.id) + '" data-k="' + L + '">' +
-          '<i>' + L + '</i>' + esc(w) + '</button>';
+          '<i>' + L + '</i>' + esc(w) +
+          (def ? '<em class="cz-def">' + esc(def) + '</em>' : '') + '</button>';
       }
       h += '</div>';
       if (my) {
