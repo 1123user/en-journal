@@ -664,13 +664,20 @@ button.link{font:13px/1.35 inherit; background:#fff; cursor:pointer; color:var(-
 .cz-p{margin-left:auto}
 
 .cz-ctx{margin:0 0 9px; font:13.5px/1.85 Georgia,"Times New Roman",serif; color:var(--ink2)}
-.cz-blank{color:var(--bad); letter-spacing:1px; border-bottom:2px solid #f3c4c4; font-weight:600}
+/* 只有本题这一个空，画成一块能看见的待填位（别的空已经抹掉了） */
+.cz-blank{background:#eef4ff; border-bottom:2.5px solid var(--acc); border-radius:2px;
+  padding:0 12px; font-weight:600}
 .cz-other{color:#b7c0cd; font-size:11.5px}
 
 .cz-opts{display:flex; gap:7px; flex-wrap:wrap}
-.cz-opt{display:inline-flex; align-items:center; gap:6px; cursor:pointer;
-  font:13px/1 inherit; color:var(--ink2); background:#fff;
+.cz-opt{display:inline-flex; align-items:center; gap:6px; cursor:pointer; flex-wrap:wrap; min-width:0;
+  font:13px/1.35 inherit; color:var(--ink2); background:#fff; text-align:left;
   border:1px solid var(--line); border-radius:9px; padding:8px 11px}
+/* 答完挂上的词性与释义（data/cloze_words.js） */
+.cz-def{flex-basis:100%; font-style:normal; font-weight:400; font-size:10.5px; line-height:1.45;
+  color:var(--ink3); margin-top:3px; word-break:break-word}
+.cz-opt.right .cz-def{color:#2f7d55}
+.cz-opt.mine-wrong .cz-def{color:#b4534f}
 .cz-opt:hover{border-color:#cfdcff; background:#fbfcff}
 .cz-opt i{font-style:normal; font-size:10.5px; color:var(--ink3); font-weight:600}
 .cz-opt.locked{cursor:default; opacity:.75}
