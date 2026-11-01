@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
-<link rel="stylesheet" href="css/journal.css?v=10300943">
+<link rel="stylesheet" href="css/journal.css?v=11010950">
 </head>
 <body>
 
@@ -65,6 +65,11 @@
 
     <div class="planbar" id="planBar" hidden></div>
 
+    <button class="rvstrip" id="rvBar" type="button" hidden></button>
+
+    <!-- 完形每日三空：真题原句 + 前后各一句，逻辑 2 + 语义 1 -->
+    <div class="cz" id="czPanel" hidden></div>
+
     <div class="syncbar">
       <span class="sb-ico">⇄</span>
       <span class="sb-t">与刷题站（index.html）双向自动同步：这里点完选项 1 秒内就写进主站作答，
@@ -87,6 +92,9 @@
 
   <!-- ══════════════ 分析 ══════════════ -->
   <section id="vAna" hidden>
+    <!-- 阅读复盘：次日把前一天错题归类到五类题型，并推阿超对应技巧视频 -->
+    <div class="rv" id="rvPanel"></div>
+
     <div class="anabar">
       <div class="segtabs" id="anaScope">
         <button type="button" data-scope="today" class="on">今日这一篇</button>
@@ -204,15 +212,17 @@
   </div>
 </div>
 
-<script src="data/papers-index.js?v=10300943"></script>
-<script src="data/diff.js?v=10300943"></script>
-<script src="js/cloud.js?v=10300943"></script>
-<script src="js/journal.js?v=10300943"></script>
-<script src="js/journal-why.js?v=10300943"></script>
-<script src="js/journal-ana.js?v=10300943"></script>
-<script src="js/journal-sync.js?v=10300943"></script>
-<script src="js/journal-plan.js?v=10300943"></script>
-<script src="js/journal-mobile.js?v=10300943"></script>
-<script src="js/journal-pair.js?v=10300943"></script>
+<script src="data/papers-index.js?v=11010950"></script>
+<script src="data/diff.js?v=11010950"></script>
+<script src="js/cloud.js?v=11010950"></script>
+<script src="js/journal.js?v=11010950"></script>
+<script src="js/journal-why.js?v=11010950"></script>
+<script src="js/journal-ana.js?v=11010950"></script>
+<script src="js/journal-sync.js?v=11010950"></script>
+<script src="js/journal-review.js?v=11010950"></script>
+<script src="js/journal-cloze.js?v=11010950"></script>
+<script src="js/journal-plan.js?v=11010950"></script>
+<script src="js/journal-mobile.js?v=11010950"></script>
+<script src="js/journal-pair.js?v=11010950"></script>
 </body>
 </html>
