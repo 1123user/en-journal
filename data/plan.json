@@ -1,14 +1,14 @@
 {
- "date": "2026-11-02",
- "day": 8,
- "year": "2023",
- "sec": "text2",
- "label": "Text 2",
- "title": "2023 年 Text 2（限时 18 分钟）",
+ "date": "2026-11-09",
+ "day": 15,
+ "year": "2022",
+ "sec": "text3",
+ "label": "Text 3",
+ "title": "2022 年 Text 3（限时 18 分钟）",
  "minutes": 18,
  "note": "四符号：√ 对 / △ 待定正确 / × 没说 / ✗ 错；先判能否定位",
  "kind": "next",
  "ok": true,
- "today": "2026-11-01",
+ "today": "2026-11-07",
  "src": "349打卡/plan-en.json"
 }
