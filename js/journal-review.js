@@ -235,6 +235,26 @@
         '<div class="rvp-vs">' + vs + "</div></div>";
     }).join("");
 
+    /* 每日一课：一图流（王无术）——按日期轮换，今天的主推排第一 */
+    var YT = (VM && VM.yituliu) || null;
+    var ytl = "";
+    if (YT && YT.videos && YT.videos.length) {
+      var dayIdx = Math.floor(Date.now() / 86400000) % YT.videos.length;
+      var ordered = [YT.videos[dayIdx]].concat(YT.videos.filter(function (_, i) { return i !== dayIdx; }));
+      var yvs = ordered.map(function (x, j) {
+        var id = "ytl:" + j;
+        return '<button type="button" class="rvv' + (state.open[id] ? " on" : "") +
+          '" data-v="' + id + '" data-bv="' + x.bv + '" data-p="' + (x.p || 1) + '">' +
+          '<span class="rvv-p">' + (j === 0 ? "今日" : "备选") + '</span>' + esc(x.title) + "</button>" +
+          '<div class="rvv-box" data-box="' + id + '"></div>';
+      }).join("");
+      ytl = '<div class="rvp">' +
+        '<div class="rvp-hd"><span class="rvp-k">' + esc(YT.cn) + "</span>" +
+        '<span class="rvp-m">每天轮换一集 · 做题前过一遍</span></div>' +
+        (YT.why ? '<p class="rvp-why">' + esc(YT.why) + "</p>" : "") +
+        '<div class="rvp-vs">' + yvs + "</div></div>";
+    }
+
     panel.innerHTML =
       '<div class="pane-hd"><b>阅读复盘</b><span class="sub">次日归类前一天错题 · 带着方法回头复盘</span></div>' +
       '<div class="rv-days">' + chips + "</div>" +
@@ -243,6 +263,8 @@
       '<div class="rv-sec"><div class="rv-sh">题型分布<span>错得最多的排最上面</span></div>' + types + "</div>" +
       '<div class="rv-sec"><div class="rv-sh">错题逐题过<span>越难的排越前（按预测正确率升序），先重做上面这几道</span></div>' +
       (wrong || '<p class="rv-empty">这一天没有错题。</p>') + "</div>" +
+      '<div class="rv-sec"><div class="rv-sh">每日一课 · 一图流（王无术）<span>考场决策树速成 · 阅读已看过可跳到新题型/完形</span></div>' +
+      (ytl || '<p class="rv-empty">一图流清单还没加载出来。</p>') + "</div>" +
       '<div class="rv-sec"><div class="rv-sh">该补的技巧视频<span>阿超（陈志超）· 点开直接播</span></div>' +
       (videos || '<p class="rv-empty">没有需要补的题型。</p>') + "</div>";
 
