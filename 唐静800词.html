@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>唐静翻译必背 800 词 · 背词</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --bg:#f5f6f8;--card:#fff;--ink:#111827;--ink2:#4b5563;--sub:#6b7280;--line:#e5e7eb;
+  --blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0f172a;--card:#161f33;--ink:#e5e7eb;--ink2:#cbd5e1;--sub:#94a3b8;--line:#26324a}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65;
+  display:flex;flex-direction:column;min-height:100%;
+}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--blue)}
+
+/* 顶栏 */
+.hd{
+  display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--card);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap;
+}
+.hd h1{font-size:16px;font-weight:800;white-space:nowrap}
+.hd .src{font-size:12px;color:var(--sub);white-space:nowrap}
+.hd .grow{flex:1;min-width:10px}
+.pgw{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.pgbar{width:130px;height:6px;border-radius:4px;background:var(--line);overflow:hidden}
+.pgbar i{display:block;height:100%;background:var(--green);width:0;transition:width .25s}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink2);padding:6px 13px;font-size:13px}
+.seg button.on{background:var(--blue);color:#fff}
+.mini{border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:9px;padding:6px 11px;font-size:12.5px}
+.mini:hover{border-color:#9ca3af}
+
+/* 主体 */
+.main{flex:1;min-height:0;display:flex;flex-direction:column}
+
+/* ── 闪卡 ── */
+.flash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 18px 30px;gap:18px}
+.card{
+  width:min(880px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 10px 30px rgba(15,23,42,.07);padding:46px 40px 38px;text-align:center;
+  min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+}
+.card .idx{font-size:12.5px;color:var(--sub);letter-spacing:.4px}
+.card .en{
+  font-size:clamp(34px,5.2vw,62px);font-weight:800;letter-spacing:-.5px;line-height:1.2;
+  word-break:break-word;
+}
+.card .zh{
+  font-size:clamp(17px,2vw,22px);color:var(--ink2);line-height:1.8;max-width:720px;
+  border-top:1px dashed var(--line);padding-top:16px;width:100%;
+}
+.card .zh.hide{visibility:hidden}
+.card .tip{font-size:13px;color:var(--sub)}
+.flash .acts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{
+  border:0;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:700;
+  background:var(--blue);color:#fff;
+}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:var(--card);color:var(--ink2);border:1px solid var(--line)}
+.btn.ok{background:var(--green)}
+.btn.no{background:#fff;color:var(--red);border:1.5px solid #fecaca}
+.kbd{font-size:12px;color:var(--sub);text-align:center}
+.kbd kbd{background:var(--card);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-family:inherit;font-size:11.5px;color:var(--ink2);margin:0 2px}
+
+/* ── 词表 ── */
+.list{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 18px 24px;gap:10px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.inp{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px;font-family:inherit}
+.ab{display:flex;gap:4px;flex-wrap:wrap}
+.ab button{width:26px;height:26px;border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:7px;font-size:12px}
+.ab button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.tbl{flex:1;min-height:0;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.row{display:grid;grid-template-columns:minmax(180px,32%) 1fr 46px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:14.5px;align-items:baseline}
+.row:last-child{border-bottom:0}
+.row.head{position:sticky;top:0;background:var(--card);font-size:12px;color:var(--sub);font-weight:700;border-bottom:1px solid var(--line);z-index:2;pointer-events:none}
+.row .en{font-weight:700;word-break:break-word}
+.row .zh{color:var(--ink2)}
+.row .st{text-align:center;color:var(--sub);font-size:16px;user-select:none;cursor:pointer}
+.row.done .en{color:var(--sub);text-decoration:line-through}
+.row:hover{background:rgba(37,99,235,.04)}
+.empty{padding:26px;text-align:center;color:var(--sub);font-size:13.5px}
+.foot{padding:6px 4px 0;font-size:12px;color:var(--sub);display:flex;gap:14px;flex-wrap:wrap}
+
+/* 手机 */
+@media (max-width:760px){
+  .hd{padding:8px 12px;gap:8px}
+  .hd h1{font-size:14.5px}
+  .hd .src{display:none}
+  .pgbar{width:80px}
+  .card{padding:30px 20px;min-height:260px;border-radius:18px}
+  .flash{padding:16px 12px 20px}
+  .row{grid-template-columns:1fr 46px;gap:6px}
+  .row .zh{grid-column:1/2;font-size:13.5px}
+  .row.head{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <h1>📕 唐静翻译必背 <span id="tot">…</span> 词</h1>
+  <span class="src">翻译板块常用词 · 来源：抖音带背视频逐词识别</span>
+  <span class="grow"></span>
+  <div class="pgw">
+    <span id="cnt">已背 0</span>
+    <div class="pgbar"><i id="pgi"></i></div>
+  </div>
+  <div class="seg" id="mode">
+    <button data-m="flash" class="on">闪卡</button>
+    <button data-m="list">词表</button>
+  </div>
+  <button class="mini" id="btnShuffle" title="把未背的词重新打乱（快捷键 R）">🔀 打乱</button>
+  <button class="mini" id="btnOnly" title="队列里只放没背过的词（默认就是）">未背优先</button>
+</header>
+
+<main class="main">
+  <!-- 闪卡 -->
+  <section class="flash" id="flash">
+    <div class="card">
+      <div class="idx" id="idx">—</div>
+      <div class="en" id="curEn">加载中…</div>
+      <div class="zh hide" id="curZh"></div>
+      <div class="tip" id="curTip">按 <kbd>空格</kbd> 看释义</div>
+    </div>
+    <div class="acts">
+      <button class="btn ok" id="btnKnow">✅ 记住了 <span style="opacity:.75;font-weight:400">Enter</span></button>
+      <button class="btn no" id="btnNo">🤔 再来一次 <span style="opacity:.6">Backspace</span></button>
+      <button class="btn ghost" id="btnNext">⏭ 跳过 <span style="opacity:.6">→</span></button>
+    </div>
+    <div class="kbd">
+      <kbd>空格</kbd> 翻面 · <kbd>Enter</kbd> 记住了 · <kbd>Backspace</kbd> 再来一次 · <kbd>←</kbd><kbd>→</kbd> 前后翻 · <kbd>R</kbd> 打乱 · <kbd>/</kbd> 搜索
+    </div>
+  </section>
+
+  <!-- 词表 -->
+  <section class="list" id="list" hidden>
+    <div class="bar">
+      <input class="inp" id="q" placeholder="搜英文 / 中文…（按 / 聚焦）">
+      <button class="mini" id="btnZh">隐藏中文</button>
+      <button class="mini" id="btnUn">只看未背</button>
+    </div>
+    <div class="ab" id="ab"></div>
+    <div class="tbl" id="tbl"></div>
+    <div class="foot">
+      <span>点最右的 ○ 可手动标记已背</span>
+      <span>进度与记录本「每日一句」里的 800 词互通</span>
+    </div>
+  </section>
+</main>
+
+<script src="data/trans-800.js?v=20261121"></script>
+<script>
+(function () {
+  "use strict";
+  var KEY = "kb:trans800:v1";
+  var ALL = (window.TRANS800 && window.TRANS800.items) || [];
+  var S = {
+    done: {}, mode: "flash", q: "", ab: "", un: false, zh: false,
+    queue: [], i: 0, flipped: false, order: "seq"
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function load() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+      S.done = st.done || {};
+      S.mode = st.pmode || "flash";
+      S.zh = !!st.zh;
+    } catch (e) {}
+  }
+  function save() {
+    try {
+      var st = JSON.parse(localStorage.getItem(KEY) || "{}") || {};
+      st.done = S.done;
+      st.pmode = S.mode;
+      st.zh = S.zh;
+      localStorage.setItem(KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+  function countDone() { return Object.keys(S.done).length; }
+
+  /* ── 队列：未背优先，背完一轮再从头 ── */
+  function buildQueue() {
+    var un = ALL.filter(function (it) { return !S.done[it.en]; });
+    var rest = ALL.filter(function (it) { return S.done[it.en]; });
+    S.queue = un.concat(rest);
+    S.i = 0;
+  }
+  function shuffle() {
+    for (var i = S.queue.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = S.queue[i]; S.queue[i] = S.queue[j]; S.queue[j] = t;
+    }
+    S.i = 0;
+    paintCard();
+  }
+
+  /* ── 闪卡 ── */
+  function cur() { return S.queue[S.i] || null; }
+  function paintCard() {
+    var it = cur();
+    var box = $("flash");
+    if (!it) {
+      $("curEn").textContent = "全部背完了 🎉";
+      $("curZh").textContent = "";
+      $("curZh").classList.add("hide");
+      $("idx").textContent = countDone() + " / " + ALL.length;
+      $("curTip").textContent = "点「打乱」或切到词表重看";
+      return;
+    }
+    $("idx").textContent = "第 " + (S.i + 1) + " / " + S.queue.length + " 张" + (it.u ? " · unit " + it.u : "");
+    $("curEn").textContent = it.en;
+    $("curZh").textContent = it.zh || "（这个词视频里没给出释义）";
+    $("curZh").classList.toggle("hide", !S.flipped);
+    $("curTip").innerHTML = S.flipped ? "看完了？<kbd>Enter</kbd> 记住了 / <kbd>Backspace</kbd> 再来一次"
+      : "按 <kbd>空格</kbd> 看释义";
+  }
+  function flip() {
+    if (!cur()) return;
+    S.flipped = true;
+    paintCard();
+  }
+  function step(d) {
+    if (!S.queue.length) return;
+    S.i = (S.i + d + S.queue.length) % S.queue.length;
+    S.flipped = false;
+    paintCard();
+  }
+  function know() {
+    var it = cur();
+    if (!it) return;
+    S.done[it.en] = Date.now();
+    save(); paintHeader();
+    // 出队，下一位自然顶上
+    S.queue.splice(S.i, 1);
+    if (S.i >= S.queue.length) S.i = 0;
+    S.flipped = false;
+    paintCard();
+  }
+  function again() {
+    var it = cur();
+    if (!it) return;
+    delete S.done[it.en];
+    save(); paintHeader();
+    // 放到队尾，隔几张再出现
+    S.queue.splice(S.i, 1);
+    var at = Math.min(S.queue.length, S.i + 5);
+    S.queue.splice(at, 0, it);
+    if (S.i >= S.queue.length) S.i = 0;
+    S.flipped = false;
+    paintCard();
+  }
+
+  function paintHeader() {
+    var n = countDone(), t = ALL.length || 1;
+    $("cnt").textContent = "已背 " + n;
+    $("pgi").style.width = Math.min(100, n / t * 100).toFixed(1) + "%";
+    $("btnOnly").classList.toggle("on", !S.un);
+    $("btnOnly").textContent = S.un ? "只看未背" : "未背优先";
+  }
+
+  /* ── 词表 ── */
+  function filtered() {
+    var q = S.q.trim().toLowerCase();
+    return ALL.filter(function (it) {
+      if (S.un && S.done[it.en]) return false;
+      if (S.ab && it.en.charAt(0).toLowerCase() !== S.ab.toLowerCase()) return false;
+      if (q) {
+        if (it.en.toLowerCase().indexOf(q) < 0 && String(it.zh || "").toLowerCase().indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+  }
+  function paintList() {
+    var arr = filtered();
+    var h = '<div class="row head"><div>单词</div><div>释义</div><div>已背</div></div>';
+    if (!arr.length) {
+      h += '<div class="empty">没有匹配的词</div>';
+    } else {
+      h += arr.map(function (it) {
+        var d = !!S.done[it.en];
+        return '<div class="row' + (d ? " done" : "") + '" data-en="' + esc(it.en) + '">' +
+          '<div class="en">' + esc(it.en) + '</div>' +
+          '<div class="zh">' + (S.zh ? '<span style="filter:blur(5px)">' + esc(it.zh || "") + '</span>' : esc(it.zh || "")) + '</div>' +
+          '<div class="st">' + (d ? "✓" : "○") + '</div></div>';
+      }).join("");
+    }
+    $("tbl").innerHTML = h;
+  }
+  function paintAb() {
+    var html = '<button data-a="" class="' + (!S.ab ? "on" : "") + '">全</button>';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(function (c) {
+      var has = ALL.some(function (it) { return it.en.charAt(0).toLowerCase() === c.toLowerCase(); });
+      html += '<button data-a="' + c + '" class="' + (S.ab === c ? "on" : "") + '"' +
+        (has ? "" : ' disabled style="opacity:.35"') + '>' + c + '</button>';
+    });
+    $("ab").innerHTML = html;
+  }
+  function setMode(m) {
+    S.mode = m;
+    save();
+    $("flash").hidden = m !== "flash";
+    $("list").hidden = m !== "list";
+    [].forEach.call($("mode").children, function (b) {
+      b.classList.toggle("on", b.getAttribute("data-m") === m);
+    });
+    if (m === "list") { paintAb(); paintList(); }
+    else paintCard();
+  }
+
+  /* ── 事件 ── */
+  load();
+  buildQueue();
+  $("tot").textContent = ALL.length;
+  if (S.mode === "list") setMode("list"); else setMode("flash");
+  paintHeader();
+
+  $("btnKnow").addEventListener("click", know);
+  $("btnNo").addEventListener("click", again);
+  $("btnNext").addEventListener("click", function () { step(1); });
+  $("btnShuffle").addEventListener("click", shuffle);
+  $("btnOnly").addEventListener("click", function () {
+    S.un = !S.un;
+    paintHeader(); paintList();
+  });
+  $("btnZh").addEventListener("click", function () {
+    S.zh = !S.zh; save();
+    $("btnZh").textContent = S.zh ? "显示中文" : "隐藏中文";
+    paintList();
+  });
+  $("btnZh").textContent = S.zh ? "显示中文" : "隐藏中文";
+  $("mode").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-m]") : null;
+    if (b) setMode(b.getAttribute("data-m"));
+  });
+  $("q").addEventListener("input", function (e) { S.q = e.target.value; paintList(); });
+  $("ab").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button[data-a]") : null;
+    if (!b || b.disabled) return;
+    S.ab = b.getAttribute("data-a") || "";
+    paintAb(); paintList();
+  });
+  $("tbl").addEventListener("click", function (e) {
+    var r = e.target.closest ? e.target.closest(".row[data-en]") : null;
+    if (!r) return;
+    var en = r.getAttribute("data-en");
+    if (S.done[en]) delete S.done[en]; else S.done[en] = Date.now();
+    save(); paintHeader();
+    if (S.mode === "list") paintList(); else paintCard();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA") {
+      if (e.key === "Escape") e.target.blur();
+      return;
+    }
+    if (e.key === "/") { e.preventDefault(); setMode("list"); $("q").focus(); return; }
+    if (S.mode !== "flash") return;
+    if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); flip(); }
+    else if (e.key === "Enter") { e.preventDefault(); know(); }
+    else if (e.key === "Backspace") { e.preventDefault(); again(); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    else if (e.key === "r" || e.key === "R") { shuffle(); }
+  });
+})();
+</script>
+</body>
+</html>
