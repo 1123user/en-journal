@@ -134,6 +134,8 @@
     h += '</div>';
 
     h += '</div>';
+
+    h += wordsHTML();
     el.innerHTML = h;
     el.hidden = false;
 
@@ -178,10 +180,98 @@
       save(all2);
       render();
     });
+
+    el.addEventListener("input", function (e) {
+      if (!e.target || e.target.id !== "trWdQ") return;
+      var st = wstore();
+      st.q = e.target.value;
+      wsave();
+      paintWords();
+    });
   }
 
   /* 当前展示的句（点击处理用），render() 里更新 */
   var CUR = null;
+
+  /* ══════════ 唐静翻译必背 800 词（OCR 自动生成，见 data/trans-800.js） ══════════ */
+  var WKEY = "kb:trans800:v1";
+  var WST = null;
+  function wstore() {
+    if (WST) return WST;
+    try { WST = JSON.parse(localStorage.getItem(WKEY) || "{}") || {}; } catch (e) { WST = {}; }
+    if (!WST.done) WST.done = {};
+    return WST;
+  }
+  function wsave() { try { localStorage.setItem(WKEY, JSON.stringify(WST)); } catch (e) {} }
+  function words() { return (window.TRANS800 && window.TRANS800.items) || []; }
+  function wFiltered() {
+    var st = wstore(), q = (st.q || "").trim().toLowerCase(), ab = st.ab || "";
+    return words().filter(function (it) {
+      if (st.un && st.done[it.en]) return false;
+      if (ab && it.en.charAt(0).toLowerCase() !== ab.toLowerCase()) return false;
+      if (q) {
+        var hit = it.en.toLowerCase().indexOf(q) >= 0 ||
+                  String(it.zh || "").toLowerCase().indexOf(q) >= 0;
+        if (!hit) return false;
+      }
+      return true;
+    });
+  }
+  function wListHTML() {
+    var st = wstore(), arr = wFiltered();
+    if (!arr.length) return '<div class="tr-wd-empty">没有匹配的词</div>';
+    return arr.map(function (it) {
+      var d = !!st.done[it.en];
+      return '<div class="tr-wd-item' + (d ? " done" : "") + '" data-wd="item" data-w="' + esc(it.en) + '">' +
+        '<b>' + esc(it.en) + '</b>' +
+        '<span class="' + (st.zh ? "hide" : "") + '">' + esc(it.zh || "") + '</span>' +
+        (d ? '<i>✓</i>' : '') + '</div>';
+    }).join("");
+  }
+  function wordsHTML() {
+    var all = words();
+    if (!all.length) return "";
+    var st = wstore(), doneN = Object.keys(st.done).length;
+    var h = '<div class="tr-wd">' +
+      '<div class="tr-wd-hd"><b>📕 唐静翻译必背 ' + all.length + ' 词</b>' +
+      '<span class="tr-wd-cnt">已背 ' + doneN + ' / ' + all.length + '</span>' +
+      '<button type="button" class="btn sm tr-wd-t" data-wd="tgl">' + (st.open ? "收起" : "打开词表") + '</button></div>';
+    if (st.open) {
+      h += '<div class="tr-wd-bar">' +
+        '<input id="trWdQ" class="tr-wd-q" placeholder="搜英文 / 中文…" value="' + esc(st.q || "") + '">' +
+        '<button type="button" class="tr-wd-b' + (st.zh ? " on" : "") + '" data-wd="zh">' + (st.zh ? "显示中文" : "隐藏中文") + '</button>' +
+        '<button type="button" class="tr-wd-b' + (st.un ? " on" : "") + '" data-wd="un">只看未背</button></div>';
+      h += '<div class="tr-wd-ab">' +
+        '<button type="button" class="' + (!st.ab ? "on" : "") + '" data-wd="ab" data-a="">全部</button>' +
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(function (c) {
+          return '<button type="button" class="' + (st.ab === c ? "on" : "") + '" data-wd="ab" data-a="' + c + '">' + c + '</button>';
+        }).join("") + '</div>';
+      h += '<div class="tr-wd-list" id="trWdList">' + wListHTML() + '</div>';
+    }
+    return h + '</div>';
+  }
+  function paintWords() {
+    var box = document.getElementById("trWdList");
+    if (box) box.innerHTML = wListHTML();
+    var cnt = document.querySelector("#trPanel .tr-wd-cnt");
+    if (cnt) {
+      var st = wstore(), all = words().length;
+      cnt.textContent = "已背 " + Object.keys(st.done).length + " / " + all;
+    }
+  }
+  function wdClick(el) {
+    var st = wstore(), act = el.getAttribute("data-wd");
+    if (act === "tgl") { st.open = !st.open; wsave(); render(); return; }
+    if (act === "zh") { st.zh = !st.zh; wsave(); render(); return; }
+    if (act === "un") { st.un = !st.un; wsave(); render(); return; }
+    if (act === "ab") { st.ab = el.getAttribute("data-a") || ""; wsave(); render(); return; }
+    if (act === "item") {
+      var w = el.getAttribute("data-w") || "";
+      if (!w) return;
+      if (st.done[w]) delete st.done[w]; else st.done[w] = Date.now();
+      wsave(); paintWords();
+    }
+  }
 
   function bindPanel() {
     var el = panel();
@@ -189,6 +279,8 @@
     el.dataset.trBound = "1";
 
     el.addEventListener("click", function (e) {
+      var wd = e.target.closest ? e.target.closest("[data-wd]") : null;
+      if (wd) { wdClick(wd); return; }
       var ub = e.target.closest ? e.target.closest(".tr-unit") : null;
       if (!ub || !CUR) return;
       var t = todayStr();
