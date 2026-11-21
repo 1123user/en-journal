@@ -235,6 +235,7 @@
     var h = '<div class="tr-wd">' +
       '<div class="tr-wd-hd"><b>📕 唐静翻译必背 ' + all.length + ' 词</b>' +
       '<span class="tr-wd-cnt">已背 ' + doneN + ' / ' + all.length + '</span>' +
+      '<a class="tr-wd-link" href="唐静800词.html" target="_blank" rel="noopener" title="大屏闪卡背词：空格翻面、Enter 记住，进度与这里互通">电脑背词页 ↗</a>' +
       '<button type="button" class="btn sm tr-wd-t" data-wd="tgl">' + (st.open ? "收起" : "打开词表") + '</button></div>';
     if (st.open) {
       h += '<div class="tr-wd-bar">' +
