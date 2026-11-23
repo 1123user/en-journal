@@ -763,8 +763,9 @@ button.link{font:13px/1.35 inherit; background:#fff; cursor:pointer; color:var(-
 .tr-wd-item span.hide{filter:blur(5px)}
 .tr-wd-item i{color:#16a34a;font-style:normal}
 .tr-wd-item.done b{color:#94a3b8;text-decoration:line-through}
+.tr-wd-note{margin:0 0 8px;font-size:12px;color:#64748b}
 .tr-wd-empty{padding:14px;text-align:center;color:#94a3b8;font-size:13px}
-@media(max-width:560px){.tr-wd-item b{flex:0 0 46%}.tr-wd-list{max-height:300px}}
+@media(max-width:560px){.tr-wd-item b{flex:0 0 46%}.tr-wd-list{max-height:62vh}}
 .tr-wd-link{margin-left:auto;font-size:12.5px;color:#2563eb;text-decoration:none;white-space:nowrap}
 .tr-wd-link:hover{text-decoration:underline}
 .tr-wd-t{margin-left:8px!important}
