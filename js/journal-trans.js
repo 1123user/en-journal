@@ -196,17 +196,41 @@
   /* ══════════ 唐静翻译必背 800 词（OCR 自动生成，见 data/trans-800.js） ══════════ */
   var WKEY = "kb:trans800:v1";
   var WST = null;
+  function newSeed() { return (Math.random() * 4294967296) >>> 0; }
   function wstore() {
     if (WST) return WST;
     try { WST = JSON.parse(localStorage.getItem(WKEY) || "{}") || {}; } catch (e) { WST = {}; }
     if (!WST.done) WST.done = {};
+    /* 默认乱序：词表按随机顺序排，避免靠字母位置记词，也适合从头往下读 */
+    if (WST.rnd == null) WST.rnd = true;
+    if (!WST.seed) WST.seed = newSeed();
     return WST;
   }
   function wsave() { try { localStorage.setItem(WKEY, JSON.stringify(WST)); } catch (e) {} }
   function words() { return (window.TRANS800 && window.TRANS800.items) || []; }
+
+  /* 定种子洗牌：同一种子每次得同一顺序（点「记住了」不会跳位），换种子才换一批 */
+  function mulberry32(a) {
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function shuffled(arr, seed) {
+    var a = arr.slice(), r = mulberry32((seed || 1) >>> 0);
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(r() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
   function wFiltered() {
-    var st = wstore(), q = (st.q || "").trim().toLowerCase(), ab = st.ab || "";
-    return words().filter(function (it) {
+    var st = wstore(), q = (st.q || "").trim().toLowerCase(), ab = st.rnd ? "" : (st.ab || "");
+    var arr = st.rnd ? shuffled(words(), st.seed) : words();
+    return arr.filter(function (it) {
       if (st.un && st.done[it.en]) return false;
       if (ab && it.en.charAt(0).toLowerCase() !== ab.toLowerCase()) return false;
       if (q) {
@@ -240,20 +264,30 @@
     if (st.open) {
       h += '<div class="tr-wd-bar">' +
         '<input id="trWdQ" class="tr-wd-q" placeholder="搜英文 / 中文…" value="' + esc(st.q || "") + '">' +
+        '<button type="button" class="tr-wd-b' + (st.rnd ? " on" : "") + '" data-wd="rnd" title="点一下在乱序 / 字母序之间切换">' + (st.rnd ? "🔀 乱序" : "🔤 字母序") + '</button>' +
+        (st.rnd ? '<button type="button" class="tr-wd-b" data-wd="rsh" title="换一批随机顺序（已背标记不丢）">换一批</button>' : '') +
         '<button type="button" class="tr-wd-b' + (st.zh ? " on" : "") + '" data-wd="zh">' + (st.zh ? "显示中文" : "隐藏中文") + '</button>' +
         '<button type="button" class="tr-wd-b' + (st.un ? " on" : "") + '" data-wd="un">只看未背</button></div>';
-      h += '<div class="tr-wd-ab">' +
-        '<button type="button" class="' + (!st.ab ? "on" : "") + '" data-wd="ab" data-a="">全部</button>' +
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(function (c) {
-          return '<button type="button" class="' + (st.ab === c ? "on" : "") + '" data-wd="ab" data-a="' + c + '">' + c + '</button>';
-        }).join("") + '</div>';
+      if (st.rnd) {
+        h += '<div class="tr-wd-note">乱序 · 每行一个词，从头往下读；点一下记「已背」。</div>';
+      } else {
+        h += '<div class="tr-wd-ab">' +
+          '<button type="button" class="' + (!st.ab ? "on" : "") + '" data-wd="ab" data-a="">全部</button>' +
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(function (c) {
+            return '<button type="button" class="' + (st.ab === c ? "on" : "") + '" data-wd="ab" data-a="' + c + '">' + c + '</button>';
+          }).join("") + '</div>';
+      }
       h += '<div class="tr-wd-list" id="trWdList">' + wListHTML() + '</div>';
     }
     return h + '</div>';
   }
   function paintWords() {
     var box = document.getElementById("trWdList");
-    if (box) box.innerHTML = wListHTML();
+    if (box) {
+      var top = box.scrollTop;          /* 记住读到哪，标记已背不跳回顶部 */
+      box.innerHTML = wListHTML();
+      box.scrollTop = top;
+    }
     var cnt = document.querySelector("#trPanel .tr-wd-cnt");
     if (cnt) {
       var st = wstore(), all = words().length;
@@ -263,6 +297,8 @@
   function wdClick(el) {
     var st = wstore(), act = el.getAttribute("data-wd");
     if (act === "tgl") { st.open = !st.open; wsave(); render(); return; }
+    if (act === "rnd") { st.rnd = !st.rnd; if (st.rnd && !st.seed) st.seed = newSeed(); wsave(); render(); return; }
+    if (act === "rsh") { st.seed = newSeed(); wsave(); render(); return; }
     if (act === "zh") { st.zh = !st.zh; wsave(); render(); return; }
     if (act === "un") { st.un = !st.un; wsave(); render(); return; }
     if (act === "ab") { st.ab = el.getAttribute("data-a") || ""; wsave(); render(); return; }
