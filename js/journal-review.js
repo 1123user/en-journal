@@ -259,7 +259,7 @@
       '<div class="pane-hd"><b>阅读复盘</b><span class="sub">次日归类前一天错题 · 带着方法回头复盘</span></div>' +
       '<div class="rv-days">' + chips + "</div>" +
       '<div class="rv-sum">' + sum + "</div>" +
-      (d.cloze ? '<p class="rv-tip">这一天还做完了 ' + d.cloze + " 道完型，完型不在五类阅读题型里，单独看「分析 › 累计」。</p>" : "") +
+      (d.cloze ? '<p class="rv-tip">这一天还做完了 ' + d.cloze + ' 道完形。完形约一半考单词判断：先查四个选项的中文义、代回原句，再判逻辑关系；到「每日三空」看逐题词义对照。</p>' : "") +
       '<div class="rv-sec"><div class="rv-sh">题型分布<span>错得最多的排最上面</span></div>' + types + "</div>" +
       '<div class="rv-sec"><div class="rv-sh">错题逐题过<span>越难的排越前（按预测正确率升序），先重做上面这几道</span></div>' +
       (wrong || '<p class="rv-empty">这一天没有错题。</p>') + "</div>" +
