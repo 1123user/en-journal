@@ -1,10 +1,10 @@
 /* 完形填空 · 每日三空
  *
- * 为什么不是「每日一句」：340 道完形真题里 49.4% 是逻辑关系题，
- * 只给孤零零一句，四个选项讲得通，练了反而学坏。
+ * 为什么不是「每日一句」：完形约一半是单词判断/词义辨析（错因也以词义为主），
+ * 只给孤零零一句，四个选项都讲得通，练了反而学坏。
  * 所以每题都带 上一句 + 本句 + 下一句，数据由 tools/make_cloze_daily.py 生成。
  *
- * 只跟宋逸轩一位老师（六种逻辑关系），题错了就指回对应那一集。
+ * 口径：先看四个选项的中文义、代回原句；只有逻辑关系题才指回宋逸轩那一集。
  * 作答单独存 kb:clozeDaily:v1，**不写进记录本的 days**——
  * 记录本的复盘只统计 text1~text4，掺进完形会把正确率算花。
  */
@@ -54,6 +54,26 @@
     return t;
   }
 
+  /* 题型口径：单词判断（词义/搭配）是主线，逻辑只是其中一类 */
+  function kindOf(it) {
+    var t = String(it.t || "");
+    if (t.indexOf("logic") === 0) return "logic";
+    if (it.kind === "colloc" || String(it.tcn || "").indexOf("搭配") >= 0) return "colloc";
+    return "word";
+  }
+  function kindTag(it) {
+    var k = kindOf(it);
+    if (k === "logic") return "逻辑关系 · " + String(it.tcn || "").replace(/^逻辑[·:：]?/, "");
+    return k === "colloc" ? "固定搭配" : "单词判断";
+  }
+  /* 答错才给四选项词义对照：先排除词义不合的，再谈上下文 */
+  function defLine(it) {
+    return (it.options || []).map(function (w, i) {
+      var d = defOf(w);
+      return LETTERS[i] + " " + esc(w) + (d ? "＝" + esc(d) : "");
+    }).join(" · ");
+  }
+
   function panel() { return document.getElementById("czPanel"); }
 
   function dayData() {
@@ -87,8 +107,14 @@
       if (my) { got++; if (my !== it.answer) wrong++; }
     });
 
+    var kc = { word: 0, logic: 0, colloc: 0 };
+    today.items.forEach(function (it) { kc[kindOf(it)]++; });
+    var ks = [];
+    if (kc.word) ks.push("单词判断 " + kc.word);
+    if (kc.colloc) ks.push("固定搭配 " + kc.colloc);
+    if (kc.logic) ks.push("逻辑 " + kc.logic);
     var h = '<div class="cz-hd"><b>每日三空</b>' +
-      '<span>' + today.date.slice(5).replace("-", "/") + ' · 逻辑 2 + 语义 1，每题都带前后句</span>' +
+      '<span>' + today.date.slice(5).replace("-", "/") + ' · ' + (ks.join(" + ") || "单词判断为主") + '，每题都带前后句</span>' +
       (got ? '<em class="' + (wrong ? "bad" : "ok") + '">已答 ' + got + "/" + today.items.length +
         (wrong ? " · 错 " + wrong : " · 全对") + '</em>' : '<em>还没做</em>') +
       '</div>';
@@ -99,7 +125,7 @@
       var isRight = my && my === it.answer;
       h += '<div class="cz-item' + (my ? (isRight ? " ok" : " bad") : "") + '">';
       h += '<div class="cz-q"><span class="cz-n">' + (i + 1) + '</span>' +
-        '<span class="cz-tag">' + esc(it.tcn) + '</span>' +
+        '<span class="cz-tag">' + esc(kindTag(it)) + '</span>' +
         '<span class="cz-src">' + esc(it.y) + ' 完形 第 ' + esc(it.n) + ' 空</span>' +
         (it.p != null ? '<span class="cz-p">预测正确率 ' + Math.round(it.p * 100) + '%</span>' : '') +
         '</div>';
@@ -120,11 +146,17 @@
       }
       h += '</div>';
       if (my) {
-        h += '<p class="cz-fb">' + (isRight
-          ? '✓ 对。'
-          : '✗ 你选 ' + esc(my) + '，答案是 <b>' + esc(it.answer) + '</b>。') +
-          (it.hit && !isRight ? '这题是' + esc(it.tcn) + ' → 回看「' + esc(it.hit) + '」' : '') +
-          '</p>';
+        var kd = kindOf(it);
+        var fb = isRight ? '✓ 对。' : '✗ 你选 ' + esc(my) + '，答案是 <b>' + esc(it.answer) + '</b>。';
+        if (!isRight) fb += '<br><b>先查词义：</b>' + defLine(it);
+        if (kd === "word") {
+          if (!isRight) fb += '<br><b>再做：</b>把 ' + esc(it.answer) + ' 代回原句读一遍，卡壳的就是词义/搭配不合。';
+        } else if (kd === "colloc") {
+          fb += '<br><b>固定搭配：</b>代回原句读整句，别只盯空里那个词。';
+        } else if (it.hit) {
+          fb += '<br>这一步是逻辑关系 → 回看「' + esc(it.hit) + '」。';
+        }
+        h += '<p class="cz-fb">' + fb + '</p>';
       }
       h += '</div>';
     });
